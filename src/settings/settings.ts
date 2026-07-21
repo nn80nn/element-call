@@ -106,7 +106,7 @@ export const backgroundBlur = new Setting<boolean>("background-blur", false);
 
 export const noiseSuppression = new Setting<boolean>(
   "noise-suppression",
-  false,
+  true,
 );
 
 export const showHandRaisedTimer = new Setting<boolean>(
