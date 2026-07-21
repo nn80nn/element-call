@@ -7,6 +7,7 @@ Please see LICENSE in the repository root for full details.
 */
 import {
   ConnectionState as LivekitConnectionState,
+  LocalAudioTrack,
   type LocalTrackPublication,
   LocalVideoTrack,
   ParticipantEvent,
@@ -14,6 +15,7 @@ import {
   Track,
 } from "livekit-client";
 import {
+  combineLatest,
   map,
   NEVER,
   type Observable,
@@ -29,6 +31,11 @@ import {
   type ProcessorState,
   trackProcessorSync,
 } from "../../../livekit/TrackProcessorContext.tsx";
+import {
+  RnnoiseTrackProcessor,
+  supportsRnnoise,
+} from "../../../livekit/RnnoiseTrackProcessor.ts";
+import { noiseSuppression as noiseSuppressionSetting } from "../../../settings/settings.ts";
 import { getUrlParams } from "../../../UrlParams.ts";
 import { observeTrackReference$ } from "../../observeTrackReference";
 import { type Connection } from "../remoteMembers/Connection.ts";
@@ -73,6 +80,8 @@ export class Publisher {
 
     // Setup track processor syncing (blur)
     this.observeTrackProcessors(this.scope, room, trackerProcessorState$);
+    // Setup the RNNoise noise suppression processor syncing for the mic track
+    this.observeAudioTrackProcessor(this.scope, room);
     // Observe media device changes and update LiveKit active devices accordingly
     this.observeMediaDevices(this.scope, devices, controlledAudioDevices);
 
@@ -439,5 +448,43 @@ export class Publisher {
       null,
     );
     trackProcessorSync(scope, track$, trackerProcessorState$);
+  }
+
+  // Applies/removes the RNNoise noise suppression processor on the mic track,
+  // following the same on/off pattern as observeTrackProcessors does for video.
+  private observeAudioTrackProcessor(
+    scope: ObservableScope,
+    room: LivekitRoom,
+  ): void {
+    if (!supportsRnnoise()) return;
+    const rnnoiseProcessor = new RnnoiseTrackProcessor();
+
+    const audioTrack$ = scope.behavior(
+      observeTrackReference$(
+        room.localParticipant,
+        Track.Source.Microphone,
+      ).pipe(
+        map((trackRef) => {
+          const track = trackRef?.publication.track;
+          return track instanceof LocalAudioTrack ? track : null;
+        }),
+      ),
+      null,
+    );
+
+    combineLatest([audioTrack$, noiseSuppressionSetting.value$])
+      .pipe(scope.bind())
+      .subscribe(([audioTrack, enabled]) => {
+        if (!audioTrack) return;
+        if (enabled && !audioTrack.getProcessor()) {
+          audioTrack.setProcessor(rnnoiseProcessor).catch((e) => {
+            this.logger.error("Failed to enable RNNoise processor", e);
+          });
+        } else if (!enabled && audioTrack.getProcessor()) {
+          audioTrack.stopProcessor().catch((e) => {
+            this.logger.error("Failed to disable RNNoise processor", e);
+          });
+        }
+      });
   }
 }

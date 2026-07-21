@@ -224,6 +224,8 @@
     "feedback_tab_send_logs_label": "Include debug logs",
     "feedback_tab_thank_you": "Thanks, we received your feedback!",
     "feedback_tab_title": "Feedback",
+    "noise_suppression_label": "Suppress background noise",
+    "noise_suppression_not_supported": "(Noise suppression is not supported by this device.)",
     "opt_in_description": "<0></0><1></1>You may withdraw consent by unchecking this box. If you are currently in a call, this setting will take effect at the end of the call.",
     "preferences_tab": {
       "developer_mode_label": "Developer mode",
