@@ -109,6 +109,16 @@ export const noiseSuppression = new Setting<boolean>(
   true,
 );
 
+// Experimental alternative to RNNoise (see RnnoiseTrackProcessor): DTLN, which unlike
+// RNNoise was trained on a noise set that includes short transient noises (keyboard
+// clicks, taps), not just steady background noise. Off by default and independent from
+// the RNNoise setting above while it's being evaluated; takes priority over RNNoise when
+// both happen to be on. See DtlnTrackProcessor.
+export const noiseSuppressionDtln = new Setting<boolean>(
+  "noise-suppression-dtln",
+  false,
+);
+
 export const showHandRaisedTimer = new Setting<boolean>(
   "hand-raised-show-timer",
   false,

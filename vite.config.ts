@@ -19,6 +19,7 @@ import { codecovVitePlugin } from "@codecov/vite-plugin";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
 import wasm from "vite-plugin-wasm";
+import { noiseSuppressionAudioWorkletVitePlugin } from "@workadventure/noise-suppression/vite";
 
 import react from "@vitejs/plugin-react";
 import { realpathSync } from "fs";
@@ -31,6 +32,7 @@ export const vitePluginsConfig = ({
   const plugins: PluginOption[] = [
     react(),
     wasm(),
+    noiseSuppressionAudioWorkletVitePlugin(),
     nodePolyfills({
       // Enables the 'events' module, which is required by the matrix-js-sdk
       include: ["events"],

@@ -24,9 +24,11 @@ import {
   soundEffectVolume as soundEffectVolumeSetting,
   backgroundBlur as backgroundBlurSetting,
   noiseSuppression as noiseSuppressionSetting,
+  noiseSuppressionDtln as noiseSuppressionDtlnSetting,
   developerMode,
 } from "./settings";
 import { supportsRnnoise } from "../livekit/RnnoiseTrackProcessor";
+import { supportsDtln } from "../livekit/DtlnTrackProcessor";
 import { PreferencesSettingsTab } from "./PreferencesSettingsTab";
 import { Slider } from "../Slider";
 import { DeviceSelection } from "./DeviceSelection";
@@ -124,6 +126,28 @@ export const SettingsModal: FC<Props> = ({
     );
   };
 
+  // Generate a `Checkbox` input to turn the experimental DTLN noise suppression on or off.
+  const DtlnNoiseSuppressionCheckbox: React.FC = (): ReactNode => {
+    const supported = useMemo(() => supportsDtln(), []);
+    const [dtlnActive, setDtlnActive] = useSetting(noiseSuppressionDtlnSetting);
+
+    return (
+      <FieldRow>
+        <InputField
+          id="activateDtlnNoiseSuppression"
+          label={t("settings.noise_suppression_dtln_label")}
+          description={
+            supported ? "" : t("settings.noise_suppression_not_supported")
+          }
+          type="checkbox"
+          checked={!!dtlnActive}
+          onChange={(b): void => setDtlnActive(b.target.checked)}
+          disabled={!supported}
+        />
+      </FieldRow>
+    );
+  };
+
   const devices = useMediaDevices();
   useEffect(() => {
     if (open) devices.requestDeviceNames(); // No-op after the first call
@@ -193,6 +217,7 @@ export const SettingsModal: FC<Props> = ({
         </Form>
         <Separator />
         <NoiseSuppressionCheckbox />
+        <DtlnNoiseSuppressionCheckbox />
       </>
     ),
   };

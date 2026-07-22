@@ -35,7 +35,14 @@ import {
   RnnoiseTrackProcessor,
   supportsRnnoise,
 } from "../../../livekit/RnnoiseTrackProcessor.ts";
-import { noiseSuppression as noiseSuppressionSetting } from "../../../settings/settings.ts";
+import {
+  DtlnTrackProcessor,
+  supportsDtln,
+} from "../../../livekit/DtlnTrackProcessor.ts";
+import {
+  noiseSuppression as noiseSuppressionSetting,
+  noiseSuppressionDtln as noiseSuppressionDtlnSetting,
+} from "../../../settings/settings.ts";
 import { getUrlParams } from "../../../UrlParams.ts";
 import { observeTrackReference$ } from "../../observeTrackReference";
 import { type Connection } from "../remoteMembers/Connection.ts";
@@ -450,14 +457,18 @@ export class Publisher {
     trackProcessorSync(scope, track$, trackerProcessorState$);
   }
 
-  // Applies/removes the RNNoise noise suppression processor on the mic track,
-  // following the same on/off pattern as observeTrackProcessors does for video.
+  // Applies/removes the noise suppression processor on the mic track, following the same
+  // on/off pattern as observeTrackProcessors does for video. DTLN (experimental) takes
+  // priority over RNNoise if both settings happen to be on.
   private observeAudioTrackProcessor(
     scope: ObservableScope,
     room: LivekitRoom,
   ): void {
-    if (!supportsRnnoise()) return;
-    const rnnoiseProcessor = new RnnoiseTrackProcessor();
+    const rnnoiseProcessor = supportsRnnoise()
+      ? new RnnoiseTrackProcessor()
+      : undefined;
+    const dtlnProcessor = supportsDtln() ? new DtlnTrackProcessor() : undefined;
+    if (!rnnoiseProcessor && !dtlnProcessor) return;
 
     const audioTrack$ = scope.behavior(
       observeTrackReference$(
@@ -472,19 +483,28 @@ export class Publisher {
       null,
     );
 
-    combineLatest([audioTrack$, noiseSuppressionSetting.value$])
+    combineLatest([
+      audioTrack$,
+      noiseSuppressionSetting.value$,
+      noiseSuppressionDtlnSetting.value$,
+    ])
       .pipe(scope.bind())
-      .subscribe(([audioTrack, enabled]) => {
+      .subscribe(([audioTrack, rnnoiseEnabled, dtlnEnabled]) => {
         if (!audioTrack) return;
-        if (enabled && !audioTrack.getProcessor()) {
-          audioTrack.setProcessor(rnnoiseProcessor).catch((e) => {
-            this.logger.error("Failed to enable RNNoise processor", e);
-          });
-        } else if (!enabled && audioTrack.getProcessor()) {
-          audioTrack.stopProcessor().catch((e) => {
-            this.logger.error("Failed to disable RNNoise processor", e);
-          });
-        }
+        const wanted =
+          dtlnEnabled && dtlnProcessor
+            ? dtlnProcessor
+            : rnnoiseEnabled && rnnoiseProcessor
+              ? rnnoiseProcessor
+              : undefined;
+        const current = audioTrack.getProcessor();
+        if (current === wanted) return;
+        (async (): Promise<void> => {
+          if (current) await audioTrack.stopProcessor();
+          if (wanted) await audioTrack.setProcessor(wanted);
+        })().catch((e) => {
+          this.logger.error("Failed to switch noise suppression processor", e);
+        });
       });
   }
 }
