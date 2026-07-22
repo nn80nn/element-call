@@ -28,7 +28,25 @@ layer(compound);
   --font-size-title: calc(24px * var(--font-scale));
   --font-size-headline: calc(32px * var(--font-scale));
 
-  --cpd-color-border-accent: var(--cpd-color-green-800);
+  --cpd-color-border-accent: var(--cpd-color-purple-800);
+
+  /* Remess brand accent: swap the default Compound "accent" hue (green) for a
+  Discord-like blurple across the whole app (buttons, checkboxes, links,
+  badges, focus states, etc.) without touching the "success"/encryption green,
+  which is a semantically distinct token family. */
+  --cpd-color-text-action-accent: var(--cpd-color-purple-900);
+  --cpd-color-text-badge-accent: var(--cpd-color-purple-1100);
+  --cpd-color-bg-accent-rest: var(--cpd-color-purple-900);
+  --cpd-color-bg-accent-hovered: var(--cpd-color-purple-1000);
+  --cpd-color-bg-accent-pressed: var(--cpd-color-purple-1100);
+  --cpd-color-bg-accent-selected: var(--cpd-color-alpha-purple-300);
+  --cpd-color-bg-accent-subtle: var(--cpd-color-purple-200);
+  --cpd-color-bg-badge-accent: var(--cpd-color-purple-400);
+  --cpd-color-border-accent-subtle: var(--cpd-color-purple-700);
+  --cpd-color-border-accent-primary: var(--cpd-color-purple-900);
+  --cpd-color-icon-accent-tertiary: var(--cpd-color-purple-800);
+  --cpd-color-icon-accent-primary: var(--cpd-color-purple-900);
+
   /* The distance to inset non-full-width content from the edge of the window
   along the inline axis. This ramps up from 16px for typical mobile windows, to
   96px for typical desktop windows, and accounts for the safe area. */
@@ -60,7 +78,7 @@ layer(compound);
 }
 
 .cpd-theme-dark {
-  --cpd-color-border-accent: var(--cpd-color-green-1100);
+  --cpd-color-border-accent: var(--cpd-color-purple-1100);
   --stopgap-color-on-solid-accent: var(--cpd-color-text-primary);
   --stopgap-background-85: rgba(16, 19, 23, 0.85);
 }
