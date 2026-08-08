@@ -24,12 +24,20 @@ export default defineConfig((env) =>
           {
             type: "json",
             output: "./config.json",
+            // NB: whatever is written here wins over DEFAULT_CONFIG for every embedded
+            // (widget) deployment, which is the one our desktop app ships, so the
+            // resilience defaults have to be kept in step with the ones in
+            // src/config/ConfigOptions.ts rather than only being set there.
             data: {
               matrix_rtc_session: {
                 wait_for_key_rotation_ms: 5000,
                 delayed_leave_event_restart_ms: 4000,
-                delayed_leave_event_delay_ms: 18000,
+                // Upstream uses 18s. On a connection that lags in bursts that is short
+                // enough to eject people from calls they never left; see the comment on
+                // DEFAULT_CONFIG for the trade-off against lingering ghost participants.
+                delayed_leave_event_delay_ms: 30000,
               },
+              sync_disconnect_grace_period_ms: 30000,
             },
           },
         ]),

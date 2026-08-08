@@ -211,10 +211,19 @@ export const DEFAULT_CONFIG: ResolvedConfigOptions = {
   features: {
     feature_use_device_session_member_events: true,
   },
-  sync_disconnect_grace_period_ms: 10000,
+  // Both of these windows govern how long a bad connection is tolerated before we treat
+  // ourselves as having dropped out of the call, and upstream's 10s is short enough that an
+  // ordinary lag spike on a flaky connection ejects you from a call you never left.
+  //
+  // Widening them costs a longer "ghost" participant after a hard crash or power loss (others
+  // keep seeing you in the call until the server fires the delayed leave event), which is a
+  // much smaller annoyance than being kicked out mid-sentence. Note the server may cap
+  // delayed_leave_event_delay_ms via max_delay_allowed, in which case the MembershipManager
+  // clamps to the server's limit by itself.
+  sync_disconnect_grace_period_ms: 30000,
   ssla: "https://static.element.io/legal/element-software-and-services-license-agreement-uk-1.pdf",
   matrix_rtc_session: {
-    delayed_leave_event_delay_ms: 10000,
+    delayed_leave_event_delay_ms: 30000,
     network_error_retry_ms: 1000,
   },
 };

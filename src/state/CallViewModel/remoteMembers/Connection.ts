@@ -37,6 +37,7 @@ import {
   UnknownCallError,
 } from "../../../utils/errors.ts";
 import { type JwtEndpointVersion } from "../localMember/LocalTransport.ts";
+import { defaultLiveKitConnectOptions } from "../../../livekit/options.ts";
 
 export interface ConnectionOpts {
   /**
@@ -228,7 +229,7 @@ export class Connection {
 
       try {
         this.logger.info(`livekitRoom.connect ${url}`);
-        await this.livekitRoom.connect(url, jwt);
+        await this.livekitRoom.connect(url, jwt, defaultLiveKitConnectOptions);
         this.logger.info(`livekitRoom.connect SUCCESS ${url}`);
       } catch (e) {
         this.logger.info(`livekitRoom.connect FAILED ${url}`, e);
