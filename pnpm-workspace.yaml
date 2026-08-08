@@ -1,3 +1,10 @@
+# matrix-js-sdk is pulled in from git, and preparing a git-hosted package runs a nested
+# `pnpm install` inside the fetched tarball. That package pins an exact pnpm version, the
+# nested call resolves its own pnpm regardless of what invoked it, and by default the
+# mismatch aborts the whole install. The check does not affect what ends up installed, so
+# treat it as advice rather than an error.
+pmOnFail: ignore
+
 minimumReleaseAgeExclude:
   - "@vector-im/compound-design-tokens"
   - "@vector-im/compound-web"
