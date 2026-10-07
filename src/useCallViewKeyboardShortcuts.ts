@@ -5,7 +5,7 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { logger } from "matrix-js-sdk/lib/logger";
 
 import { useEventTarget } from "./useEvents";
@@ -81,6 +81,15 @@ export function useCallViewKeyboardShortcuts(
   const [mode] = useSetting(inputMode);
   const [pttCode] = useSetting(pushToTalkKey);
   const pushToTalk = mode === "ptt";
+
+  // Choosing push-to-talk during a call has to close the microphone straight away; the
+  // initial muted state is only applied when joining, so otherwise it would stay open until
+  // the first press and release of the key.
+  const wasPushToTalk = useRef(pushToTalk);
+  useEffect(() => {
+    if (pushToTalk && !wasPushToTalk.current) setAudioEnabled?.(false);
+    wasPushToTalk.current = pushToTalk;
+  }, [pushToTalk, setAudioEnabled]);
 
   // These event handlers are set on the window because we want users to be able
   // to trigger them without going to the trouble of focusing something

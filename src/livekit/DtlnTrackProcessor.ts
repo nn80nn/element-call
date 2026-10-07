@@ -17,6 +17,7 @@ import type * as NoiseSuppression from "@workadventure/noise-suppression/audio-w
 import { logger } from "matrix-js-sdk/lib/logger";
 
 import { createVoiceChain, type VoiceChain } from "./voiceChain";
+import { setBrowserAudioProcessing } from "./browserAudioProcessing";
 
 async function loadModule(): Promise<typeof NoiseSuppression> {
   return import("@workadventure/noise-suppression/audio-worklet");
@@ -45,6 +46,7 @@ export class DtlnTrackProcessor implements TrackProcessor<
   private source?: MediaStreamAudioSourceNode;
   private worklet?: NoiseSuppression.NoiseSuppressionAudioWorkletHandle;
   private chain?: VoiceChain;
+  private inputTrack?: MediaStreamTrack;
   private destination?: MediaStreamAudioDestinationNode;
 
   /** The running voice chain, for level metering. */
@@ -57,12 +59,13 @@ export class DtlnTrackProcessor implements TrackProcessor<
   }
 
   public async restart(opts: AudioProcessorOptions): Promise<void> {
-    await this.teardown();
+    // The new track gets the same treatment in setup, so skip handing control back in between.
+    await this.teardown(false);
     await this.setup(opts);
   }
 
   public async destroy(): Promise<void> {
-    await this.teardown();
+    await this.teardown(true);
   }
 
   private async setup({ track }: AudioProcessorOptions): Promise<void> {
@@ -75,6 +78,8 @@ export class DtlnTrackProcessor implements TrackProcessor<
       bypassUntilReady: true,
     });
 
+    this.inputTrack = track;
+    void setBrowserAudioProcessing(track, true);
     this.source = this.context.createMediaStreamSource(
       new MediaStream([track]),
     );
@@ -89,7 +94,11 @@ export class DtlnTrackProcessor implements TrackProcessor<
     logger.info("DTLN processor initialised");
   }
 
-  private async teardown(): Promise<void> {
+  private async teardown(handBackToBrowser: boolean): Promise<void> {
+    if (handBackToBrowser && this.inputTrack) {
+      void setBrowserAudioProcessing(this.inputTrack, false);
+    }
+    this.inputTrack = undefined;
     this.source?.disconnect();
     this.worklet?.dispose();
     this.chain?.dispose();

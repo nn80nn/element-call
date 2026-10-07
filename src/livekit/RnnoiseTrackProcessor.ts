@@ -20,6 +20,7 @@ import type * as WebNoiseSuppressor from "@sapphi-red/web-noise-suppressor";
 import { logger } from "matrix-js-sdk/lib/logger";
 
 import { createVoiceChain, type VoiceChain } from "./voiceChain";
+import { setBrowserAudioProcessing } from "./browserAudioProcessing";
 
 // The actual @sapphi-red/web-noise-suppressor module declares classes that extend
 // AudioWorkletNode at the top level, so importing it eagerly breaks anywhere that global
@@ -63,6 +64,7 @@ export class RnnoiseTrackProcessor implements TrackProcessor<
   private source?: MediaStreamAudioSourceNode;
   private node?: WebNoiseSuppressor.RnnoiseWorkletNode;
   private chain?: VoiceChain;
+  private inputTrack?: MediaStreamTrack;
   private destination?: MediaStreamAudioDestinationNode;
 
   /** The running voice chain, for level metering. */
@@ -75,12 +77,13 @@ export class RnnoiseTrackProcessor implements TrackProcessor<
   }
 
   public async restart(opts: AudioProcessorOptions): Promise<void> {
-    this.teardown();
+    // The new track gets the same treatment in setup, so skip handing control back in between.
+    this.teardown(false);
     await this.setup(opts);
   }
 
   public async destroy(): Promise<void> {
-    this.teardown();
+    this.teardown(true);
     await Promise.resolve();
   }
 
@@ -94,6 +97,8 @@ export class RnnoiseTrackProcessor implements TrackProcessor<
       ensureWorkletRegistered(audioContext),
     ]);
 
+    this.inputTrack = track;
+    void setBrowserAudioProcessing(track, true);
     this.source = audioContext.createMediaStreamSource(
       new MediaStream([track]),
     );
@@ -112,7 +117,11 @@ export class RnnoiseTrackProcessor implements TrackProcessor<
     logger.info("RNNoise processor initialised");
   }
 
-  private teardown(): void {
+  private teardown(handBackToBrowser: boolean): void {
+    if (handBackToBrowser && this.inputTrack) {
+      void setBrowserAudioProcessing(this.inputTrack, false);
+    }
+    this.inputTrack = undefined;
     this.source?.disconnect();
     this.node?.disconnect();
     this.node?.destroy();

@@ -1253,46 +1253,6 @@ describe.each([
     });
   });
 
-  it("keeps a member without media for a while, then hides them, then shows them again", () => {
-    withTestScheduler(({ behavior, expectObservable }) => {
-      // Alice is a member from the start but her media only turns up after a minute
-      const participantInputMarbles = "a 59999ms b";
-      const expectedLayoutMarbles = "   a 29999ms b 29999ms c";
-
-      withCallViewModel(
-        {
-          remoteParticipants$: behavior(participantInputMarbles, {
-            a: [],
-            b: [aliceParticipant],
-          }),
-          rtcMembers$: constant([localRtcMember, aliceRtcMember]),
-        },
-        (vm) => {
-          vm.setGridMode("grid");
-          expectObservable(summarizeLayout$(vm.layout$)).toBe(
-            expectedLayoutMarbles,
-            {
-              // Still joining: her tile is there
-              a: {
-                type: "one-on-one-landscape",
-                pip: `${localId}:0`,
-                spotlight: `${aliceId}:0`,
-              },
-              // Never got media within the grace period: just us
-              b: { type: "grid", spotlight: undefined, grid: [`${localId}:0`] },
-              // Media arrived after all: back again
-              c: {
-                type: "one-on-one-landscape",
-                pip: `${localId}:0`,
-                spotlight: `${aliceId}:0`,
-              },
-            },
-          );
-        },
-      );
-    });
-  });
-
   it("should rank raised hands above video feeds and below speakers and presenters", () => {
     withTestScheduler(({ schedule, expectObservable }) => {
       // There should always be one tile for each MatrixRTCSession

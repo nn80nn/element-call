@@ -784,6 +784,15 @@ export function createCallViewModel$(
     ),
   );
 
+  // Remote members only look media-less because of us until we are fully connected, both
+  // while reconnecting and while still joining.
+  const weAreOffline$ = scope.behavior(
+    combineLatest([
+      localMembership.reconnecting$,
+      localMembership.connected$,
+    ]).pipe(map(([reconnecting, connected]) => reconnecting || !connected)),
+  );
+
   /**
    * List of user media (camera feeds) that we want tiles for: everything in `allUserMedia$`
    * except remote members whose membership has had no media for long enough that it is
@@ -798,10 +807,7 @@ export function createCallViewModel$(
               items.map((m) =>
                 m.local
                   ? of(false)
-                  : isStaleMedia$(
-                      m.waitingForMedia$,
-                      localMembership.reconnecting$,
-                    ),
+                  : isStaleMedia$(m.waitingForMedia$, weAreOffline$),
               ),
             ).pipe(map((stale) => items.filter((_, i) => !stale[i]))),
       ),

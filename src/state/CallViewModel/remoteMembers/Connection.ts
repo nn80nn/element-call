@@ -231,6 +231,14 @@ export class Connection {
         this.logger.info(`livekitRoom.connect ${url}`);
         await this.livekitRoom.connect(url, jwt, defaultLiveKitConnectOptions);
         this.logger.info(`livekitRoom.connect SUCCESS ${url}`);
+        // Remote audio is mixed through Web Audio (see defaultLiveKitOptions), and a context
+        // created without a user gesture can start out suspended, which would be silence.
+        // Deferred and caught so that, whatever it does, it can't fail the connection itself.
+        Promise.resolve()
+          .then(async () => this.livekitRoom.startAudio())
+          .catch((e) => {
+            this.logger.warn("Could not start audio playback", e);
+          });
       } catch (e) {
         this.logger.info(`livekitRoom.connect FAILED ${url}`, e);
         // LiveKit uses 503 to indicate that the server has hit its track limits.
