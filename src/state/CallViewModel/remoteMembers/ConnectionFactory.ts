@@ -28,7 +28,9 @@ import type { MediaDevices } from "../../MediaDevices.ts";
 import type { Behavior } from "../../Behavior.ts";
 import type { ProcessorState } from "../../../livekit/TrackProcessorContext.tsx";
 import { defaultLiveKitOptions } from "../../../livekit/options.ts";
+import { setVolumeBoostActive } from "../../savedVolumes.ts";
 import {
+  allowVolumeBoost,
   noiseSuppression as noiseSuppressionSetting,
   noiseSuppressionDtln as noiseSuppressionDtlnSetting,
 } from "../../../settings/settings.ts";
@@ -146,12 +148,15 @@ function generateRoomOption({
   // When our own noise suppression is running, the browser's would only be a second pass
   // over already-cleaned audio, which smears speech; and its automatic gain control pumps
   // against ours. Leave both to the processor, which has its own leveling stage.
+  const boost = allowVolumeBoost.value$.value;
+  setVolumeBoostActive(boost);
   const ownNoiseSuppression =
     supportsRnnoise() &&
     (noiseSuppressionSetting.value$.value ||
       noiseSuppressionDtlnSetting.value$.value);
   return {
     ...defaultLiveKitOptions,
+    webAudioMix: boost,
     videoCaptureDefaults: {
       ...defaultLiveKitOptions.videoCaptureDefaults,
       deviceId: devices.videoInput.selected$.value?.id,

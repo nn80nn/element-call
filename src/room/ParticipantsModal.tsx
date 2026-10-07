@@ -19,7 +19,7 @@ import { Slider } from "../Slider";
 import { Avatar, Size } from "../Avatar";
 import { useBehavior } from "../useBehavior";
 import { ConnectionQualityIndicator } from "../tile/ConnectionQualityIndicator";
-import { MAX_PLAYBACK_VOLUME } from "../state/savedVolumes";
+import { maxPlaybackVolume } from "../state/savedVolumes";
 import { type WrappedUserMediaViewModel } from "../state/media/WrappedUserMediaViewModel";
 import { type RemoteUserMediaViewModel } from "../state/media/RemoteUserMediaViewModel";
 import styles from "./ParticipantsModal.module.css";
@@ -48,7 +48,7 @@ const RemoteControls: FC<{ vm: RemoteUserMediaViewModel }> = ({ vm }) => {
         onValueChange={vm.adjustPlaybackVolume}
         onValueCommit={vm.commitPlaybackVolume}
         min={0}
-        max={MAX_PLAYBACK_VOLUME}
+        max={maxPlaybackVolume()}
         step={0.01}
       />
     </div>

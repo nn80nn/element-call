@@ -173,6 +173,16 @@ export const screenShareLowCpu = new Setting<boolean>(
   false,
 );
 
+/**
+ * Lets a participant's volume go up to 200%. A plain media element cannot amplify, only a
+ * Web Audio gain node can, and routing every remote track through Web Audio is a change to
+ * how call audio is played back, so it is opt-in and takes effect on the next call joined.
+ */
+export const allowVolumeBoost = new Setting<boolean>(
+  "allow-volume-boost",
+  false,
+);
+
 export const showHandRaisedTimer = new Setting<boolean>(
   "hand-raised-show-timer",
   false,

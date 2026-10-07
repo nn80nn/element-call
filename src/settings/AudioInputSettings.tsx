@@ -23,6 +23,7 @@ import { Slider } from "../Slider";
 import { useMediaDevices } from "../MediaDevicesContext";
 import {
   type InputMode,
+  allowVolumeBoost as allowVolumeBoostSetting,
   inputMode as inputModeSetting,
   noiseSuppression as noiseSuppressionSetting,
   noiseSuppressionDtln as noiseSuppressionDtlnSetting,
@@ -170,6 +171,7 @@ export const AudioInputSettings: FC = () => {
   const [test, setTest] = useState<MicTest | null>(null);
   const [listen, setListen] = useState(false);
   const [error, setError] = useState(false);
+  const [boost, setBoost] = useSetting(allowVolumeBoostSetting);
 
   // Rebinding: the next key pressed becomes the push-to-talk key.
   useEffect(() => {
@@ -244,6 +246,16 @@ export const AudioInputSettings: FC = () => {
 
   return (
     <div className={styles.root}>
+      <FieldRow>
+        <InputField
+          id="allowVolumeBoost"
+          type="checkbox"
+          label={t("settings.audio_tab.volume_boost_label")}
+          description={t("settings.audio_tab.volume_boost_description")}
+          checked={boost}
+          onChange={(e): void => setBoost(e.target.checked)}
+        />
+      </FieldRow>
       <h4>{t("settings.audio_tab.input_mode_title")}</h4>
       {modeOption("open", t("settings.audio_tab.input_mode_open"))}
       {modeOption("voice", t("settings.audio_tab.input_mode_voice"))}

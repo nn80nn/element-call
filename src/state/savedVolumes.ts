@@ -7,11 +7,24 @@ Please see LICENSE in the repository root for full details.
 
 import { logger } from "matrix-js-sdk/lib/logger";
 
+/** The loudest a participant can be set to when amplification is available. */
+export const BOOSTED_MAX_PLAYBACK_VOLUME = 2;
+
+let boostActive = false;
+
 /**
- * The loudest a participant can be set to, as a multiplier of their original level.
- * Anything above 1 is amplification, which needs the Web Audio pipeline.
+ * Records whether the call being joined plays audio through Web Audio, and so can amplify.
+ * Decided once, when the call's rooms are created: asking a plain media element for a
+ * volume above 1 throws, so what the controls offer must not change mid-call.
  */
-export const MAX_PLAYBACK_VOLUME = 2;
+export function setVolumeBoostActive(active: boolean): void {
+  boostActive = active;
+}
+
+/** The loudest a participant can be set to in the current call, as a multiplier. */
+export function maxPlaybackVolume(): number {
+  return boostActive ? BOOSTED_MAX_PLAYBACK_VOLUME : 1;
+}
 
 const STORAGE_KEY = "remess-playback-volumes";
 
@@ -36,7 +49,7 @@ function readAll(): Record<string, number> {
 export function getSavedVolume(key: string): number {
   const volume = readAll()[key];
   return typeof volume === "number" && Number.isFinite(volume)
-    ? Math.min(Math.max(volume, 0), MAX_PLAYBACK_VOLUME)
+    ? Math.min(Math.max(volume, 0), maxPlaybackVolume())
     : 1;
 }
 

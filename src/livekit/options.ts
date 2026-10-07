@@ -87,7 +87,7 @@ export const defaultLiveKitOptions: RoomOptions = {
   stopLocalTrackOnUnpublish: true,
   reconnectPolicy: new DefaultReconnectPolicy(reconnectDelaysMs),
   disconnectOnPageLeave: true,
-  // Needed for the per-participant volume slider to go past 100%: a plain media element
-  // cannot amplify, only a Web Audio gain node can.
-  webAudioMix: true,
+  // Off unless the user opts in to volume above 100% (see allowVolumeBoost): playing remote
+  // audio through Web Audio can't be suspended-proof, and it adds work to every track attach.
+  webAudioMix: false,
 };

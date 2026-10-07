@@ -214,7 +214,9 @@
       "test_start": "Test microphone",
       "test_stop": "Stop test",
       "test_title": "Microphone test",
-      "voice_threshold_label": "Sensitivity threshold: {{db}} dB"
+      "voice_threshold_label": "Sensitivity threshold: {{db}} dB",
+      "volume_boost_description": "Lets you turn a participant up to 200%. Plays call audio through a different path, so it takes effect the next time you join a call.",
+      "volume_boost_label": "Allow volume above 100% (experimental)"
     },
     "background_blur_header": "Background",
     "background_blur_label": "Blur the background of the video",
