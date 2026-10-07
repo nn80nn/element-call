@@ -254,6 +254,26 @@
       "reactions_show_label": "Show reactions",
       "show_hand_raised_timer_description": "Show a timer when a participant raises their hand",
       "show_hand_raised_timer_label": "Show hand raise duration"
+    },
+    "screen_share": {
+      "applies_next": "Changes apply the next time you start sharing.",
+      "bitrate_auto": "Automatic",
+      "bitrate_mbps": "{{mbps}} Mbit/s",
+      "bitrate_title": "Maximum bitrate",
+      "codec_h264": "H.264 (lighter on the processor when a graphics card can encode it)",
+      "codec_title": "Video codec",
+      "codec_vp8": "VP8 (works everywhere, uses the processor)",
+      "description": "For games and video, favour smoothness. If a share lags while you are running something heavy, lower the resolution or frame rate, or try H.264.",
+      "focus_detail": "Sharpness (text, slides, code)",
+      "focus_motion": "Smoothness (games, video)",
+      "focus_title": "When the computer can't keep up, prefer",
+      "fps": "{{fps}} frames per second",
+      "fps_title": "Frame rate",
+      "low_cpu_description": "Sends one version of the stream instead of several. Easier on your computer, but viewers on slow connections can't step down to a lighter version.",
+      "low_cpu_label": "Low processor load",
+      "resolution_native": "Native (screen size)",
+      "resolution_title": "Resolution",
+      "title": "Screen sharing"
     }
   },
   "star_rating_input_label_one": "{{count}} star",

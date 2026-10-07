@@ -55,7 +55,15 @@ import { getUrlParams } from "../../../UrlParams.ts";
 import { PosthogAnalytics } from "../../../analytics/PosthogAnalytics.ts";
 import { MatrixRTCMode } from "../../../config/ConfigOptions.ts";
 import { Config } from "../../../config/Config.ts";
-import { screenShareAudioPublishOptions } from "../../../livekit/options.ts";
+import { screenShareOptions } from "../../../livekit/screenShareQuality.ts";
+import {
+  screenShareBitrateMbps,
+  screenShareCodec,
+  screenShareFocus,
+  screenShareFps,
+  screenShareLowCpu,
+  screenShareResolution,
+} from "../../../settings/settings.ts";
 import {
   ConnectionState,
   type Connection,
@@ -706,7 +714,17 @@ export const createLocalMembership$ = ({
     !getUrlParams().hideScreensharing
   ) {
     toggleScreenSharing = (): void => {
+      // Read when the share starts, so a change in settings takes effect on the next one.
+      const quality = screenShareOptions({
+        focus: screenShareFocus.value$.value,
+        resolution: screenShareResolution.value$.value,
+        fps: screenShareFps.value$.value,
+        bitrateMbps: screenShareBitrateMbps.value$.value,
+        codec: screenShareCodec.value$.value,
+        lowCpu: screenShareLowCpu.value$.value,
+      });
       const screenshareSettings: ScreenShareCaptureOptions = {
+        ...quality.capture,
         // Screen share audio shouldn't have any filtering.
         // "echoCancellation" is purposely excluded, as setting it to
         // false causes the screen share audio track to include
@@ -741,7 +759,7 @@ export const createLocalMembership$ = ({
         ?.setScreenShareEnabled(
           targetScreenshareState,
           screenshareSettings,
-          screenShareAudioPublishOptions,
+          quality.publish,
         )
         .catch(logger.error);
     };

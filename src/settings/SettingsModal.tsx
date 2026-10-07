@@ -32,6 +32,7 @@ import { supportsDtln } from "../livekit/DtlnTrackProcessor";
 import { PreferencesSettingsTab } from "./PreferencesSettingsTab";
 import { Slider } from "../Slider";
 import { AudioInputSettings } from "./AudioInputSettings";
+import { ScreenShareSettings } from "./ScreenShareSettings";
 import { DeviceSelection } from "./DeviceSelection";
 import { useTrackProcessor } from "../livekit/TrackProcessorContext";
 import { DeveloperSettingsTab } from "./DeveloperSettingsTab";
@@ -239,6 +240,8 @@ export const SettingsModal: FC<Props> = ({
         </Form>
         <Separator />
         <BlurCheckbox />
+        <Separator />
+        <ScreenShareSettings />
       </>
     ),
   };

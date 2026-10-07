@@ -131,6 +131,48 @@ export const voiceThresholdDb = new Setting<number>("voice-threshold-db", -45);
 /** `KeyboardEvent.code` of the push-to-talk key. */
 export const pushToTalkKey = new Setting<string>("push-to-talk-key", "KeyT");
 
+/**
+ * What a screen share should favour when the machine or the network can't keep up:
+ *  - "motion": keep the frame rate up and let the picture get softer (games, video);
+ *  - "detail": keep the picture sharp and let the frame rate fall (slides, text, code).
+ */
+export type ScreenShareFocus = "motion" | "detail";
+export const screenShareFocus = new Setting<ScreenShareFocus>(
+  "screen-share-focus",
+  "motion",
+);
+
+/** Capture height in pixels; 0 means whatever the screen natively is. */
+export type ScreenShareResolution = 0 | 720 | 1080 | 1440;
+export const screenShareResolution = new Setting<ScreenShareResolution>(
+  "screen-share-resolution",
+  1080,
+);
+
+export type ScreenShareFps = 15 | 30 | 60;
+export const screenShareFps = new Setting<ScreenShareFps>(
+  "screen-share-fps",
+  30,
+);
+
+/** Maximum video bitrate in Mbit/s; 0 picks one to suit the resolution and frame rate. */
+export const screenShareBitrateMbps = new Setting<number>(
+  "screen-share-bitrate-mbps",
+  0,
+);
+
+export type ScreenShareCodec = "vp8" | "h264";
+export const screenShareCodec = new Setting<ScreenShareCodec>(
+  "screen-share-codec",
+  "vp8",
+);
+
+/** Encode a single version of the share instead of several for viewers on slow links. */
+export const screenShareLowCpu = new Setting<boolean>(
+  "screen-share-low-cpu",
+  false,
+);
+
 export const showHandRaisedTimer = new Setting<boolean>(
   "hand-raised-show-timer",
   false,
