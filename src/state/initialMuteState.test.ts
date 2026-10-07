@@ -21,7 +21,7 @@ test.each<{
   { callIntent: "unknown", isWidgetMode: false },
   { callIntent: "unknown", isWidgetMode: true },
 ])(
-  "Should allow to unmute on start if not skipping lobby (callIntent: $callIntent, packageType: $packageType)",
+  "Should unmute the microphone but never the camera on start if not skipping lobby (callIntent: $callIntent, packageType: $packageType)",
   ({ callIntent, isWidgetMode }) => {
     const { audioEnabled, videoEnabled } = calculateInitialMuteState(
       false,
@@ -29,7 +29,7 @@ test.each<{
       isWidgetMode,
     );
     expect(audioEnabled).toBe(true);
-    expect(videoEnabled).toBe(callIntent !== "audio");
+    expect(videoEnabled).toBe(false);
   },
 );
 
@@ -67,6 +67,6 @@ test.each<{
       true,
     );
     expect(audioEnabled).toBe(true);
-    expect(videoEnabled).toBe(callIntent !== "audio");
+    expect(videoEnabled).toBe(false);
   },
 );

@@ -10,6 +10,7 @@ import { combineLatest, map, merge, of, Subject, switchMap } from "rxjs";
 import { type Behavior } from "./Behavior";
 import { type ObservableScope } from "./ObservableScope";
 import { accumulate } from "../utils/observable";
+import { getSavedVolume, saveVolume } from "./savedVolumes";
 
 /**
  * Controls for audio playback volume.
@@ -35,6 +36,11 @@ interface VolumeControlsInputs {
    * requested volume.
    */
   sink$: Behavior<(volume: number) => void>;
+  /**
+   * If given, the volume is remembered under this key across calls: it is restored when the
+   * controls are created and saved whenever the user finishes adjusting it.
+   */
+  persistKey?: string;
 }
 
 /**
@@ -43,35 +49,41 @@ interface VolumeControlsInputs {
  */
 export function createVolumeControls(
   scope: ObservableScope,
-  { pretendToBeDisconnected$, sink$ }: VolumeControlsInputs,
+  { pretendToBeDisconnected$, sink$, persistKey }: VolumeControlsInputs,
 ): VolumeControls {
+  const initialVolume =
+    persistKey === undefined ? 1 : getSavedVolume(persistKey);
   const toggleMuted$ = new Subject<"toggle mute">();
   const adjustVolume$ = new Subject<number>();
   const commitVolume$ = new Subject<"commit">();
 
   const playbackVolume$ = scope.behavior<number>(
     merge(toggleMuted$, adjustVolume$, commitVolume$).pipe(
-      accumulate({ volume: 1, committedVolume: 1 }, (state, event) => {
-        switch (event) {
-          case "toggle mute":
-            return {
-              ...state,
-              volume: state.volume === 0 ? state.committedVolume : 0,
-            };
-          case "commit":
-            // Dragging the slider to zero should have the same effect as
-            // muting: keep the original committed volume, as if it were never
-            // dragged
-            return {
-              ...state,
-              committedVolume:
-                state.volume === 0 ? state.committedVolume : state.volume,
-            };
-          default:
-            // Volume adjustment
-            return { ...state, volume: event };
-        }
-      }),
+      accumulate(
+        { volume: initialVolume, committedVolume: initialVolume },
+        (state, event) => {
+          switch (event) {
+            case "toggle mute":
+              return {
+                ...state,
+                volume: state.volume === 0 ? state.committedVolume : 0,
+              };
+            case "commit": {
+              // Dragging the slider to zero should have the same effect as
+              // muting: keep the original committed volume, as if it were never
+              // dragged
+              const committedVolume =
+                state.volume === 0 ? state.committedVolume : state.volume;
+              if (persistKey !== undefined)
+                saveVolume(persistKey, committedVolume);
+              return { ...state, committedVolume };
+            }
+            default:
+              // Volume adjustment
+              return { ...state, volume: event };
+          }
+        },
+      ),
       map(({ volume }) => volume),
     ),
   );

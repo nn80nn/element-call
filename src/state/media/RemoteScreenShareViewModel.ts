@@ -45,6 +45,7 @@ export function createRemoteScreenShare(
     ...createBaseScreenShare(scope, inputs),
     ...createVolumeControls(scope, {
       pretendToBeDisconnected$,
+      persistKey: `${inputs.userId}:screenshare`,
       sink$: scope.behavior(
         inputs.participant$.pipe(
           map(

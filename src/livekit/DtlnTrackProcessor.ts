@@ -16,6 +16,8 @@ import type * as NoiseSuppression from "@workadventure/noise-suppression/audio-w
 
 import { logger } from "matrix-js-sdk/lib/logger";
 
+import { createVoiceChain, type VoiceChain } from "./voiceChain";
+
 async function loadModule(): Promise<typeof NoiseSuppression> {
   return import("@workadventure/noise-suppression/audio-worklet");
 }
@@ -32,15 +34,17 @@ const DTLN_SAMPLE_RATE = 16000;
  * Unlike RNNoise, DTLN was trained on a noise set that includes short transient noises
  * (keyboard clicks, taps), not just steady background noise.
  */
-export class DtlnTrackProcessor
-  implements TrackProcessor<Track.Kind.Audio, AudioProcessorOptions>
-{
+export class DtlnTrackProcessor implements TrackProcessor<
+  Track.Kind.Audio,
+  AudioProcessorOptions
+> {
   public readonly name = "dtln-suppressor";
   public processedTrack?: MediaStreamTrack;
 
   private context?: AudioContext;
   private source?: MediaStreamAudioSourceNode;
   private worklet?: NoiseSuppression.NoiseSuppressionAudioWorkletHandle;
+  private chain?: VoiceChain;
   private destination?: MediaStreamAudioDestinationNode;
 
   public async init(opts: AudioProcessorOptions): Promise<void> {
@@ -71,8 +75,10 @@ export class DtlnTrackProcessor
     );
     this.destination = this.context.createMediaStreamDestination();
 
+    this.chain = createVoiceChain(this.context);
     this.source.connect(this.worklet.node);
-    this.worklet.node.connect(this.destination);
+    this.worklet.node.connect(this.chain.input);
+    this.chain.output.connect(this.destination);
 
     this.processedTrack = this.destination.stream.getAudioTracks()[0];
     logger.info("DTLN processor initialised");
@@ -81,6 +87,8 @@ export class DtlnTrackProcessor
   private async teardown(): Promise<void> {
     this.source?.disconnect();
     this.worklet?.dispose();
+    this.chain?.dispose();
+    this.chain = undefined;
     this.destination?.disconnect();
     await this.context?.close();
     this.context = undefined;

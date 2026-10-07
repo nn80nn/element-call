@@ -32,11 +32,12 @@ export function calculateInitialMuteState(
     };
   }
 
-  // Embedded contexts are trusted environments, so they allow unmuted by default.
-  // Same for when showing a lobby, as users can adjust their settings there.
-  // Additionally, if the call intent is "audio", we disable video by default.
+  // Embedded contexts are trusted environments, so they allow an unmuted microphone by
+  // default. Same for when showing a lobby, as users can adjust their settings there.
+  // The camera is never switched on for the user, whatever the call intent: people
+  // should choose to be seen rather than find out they already are.
   return {
     audioEnabled: true,
-    videoEnabled: callIntent != "audio",
+    videoEnabled: false,
   };
 }

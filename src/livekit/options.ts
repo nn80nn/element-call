@@ -76,5 +76,7 @@ export const defaultLiveKitOptions: RoomOptions = {
   stopLocalTrackOnUnpublish: true,
   reconnectPolicy: new DefaultReconnectPolicy(reconnectDelaysMs),
   disconnectOnPageLeave: true,
-  webAudioMix: false,
+  // Needed for the per-participant volume slider to go past 100%: a plain media element
+  // cannot amplify, only a Web Audio gain node can.
+  webAudioMix: true,
 };

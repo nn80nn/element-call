@@ -28,6 +28,11 @@ import type { MediaDevices } from "../../MediaDevices.ts";
 import type { Behavior } from "../../Behavior.ts";
 import type { ProcessorState } from "../../../livekit/TrackProcessorContext.tsx";
 import { defaultLiveKitOptions } from "../../../livekit/options.ts";
+import {
+  noiseSuppression as noiseSuppressionSetting,
+  noiseSuppressionDtln as noiseSuppressionDtlnSetting,
+} from "../../../settings/settings.ts";
+import { supportsRnnoise } from "../../../livekit/RnnoiseTrackProcessor.ts";
 
 // TODO evaluate if this should be done like the Publisher Factory
 export interface ConnectionFactory {
@@ -138,6 +143,13 @@ function generateRoomOption({
   echoCancellation: boolean;
   noiseSuppression: boolean;
 }): RoomOptions {
+  // When our own noise suppression is running, the browser's would only be a second pass
+  // over already-cleaned audio, which smears speech; and its automatic gain control pumps
+  // against ours. Leave both to the processor, which has its own leveling stage.
+  const ownNoiseSuppression =
+    supportsRnnoise() &&
+    (noiseSuppressionSetting.value$.value ||
+      noiseSuppressionDtlnSetting.value$.value);
   return {
     ...defaultLiveKitOptions,
     videoCaptureDefaults: {
@@ -149,7 +161,8 @@ function generateRoomOption({
       ...defaultLiveKitOptions.audioCaptureDefaults,
       deviceId: devices.audioInput.selected$.value?.id,
       echoCancellation,
-      noiseSuppression,
+      noiseSuppression: noiseSuppression && !ownNoiseSuppression,
+      autoGainControl: !ownNoiseSuppression,
     },
     audioOutput: {
       // When using controlled audio devices, we don't want to set the

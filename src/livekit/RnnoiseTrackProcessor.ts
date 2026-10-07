@@ -19,6 +19,8 @@ import type * as WebNoiseSuppressor from "@sapphi-red/web-noise-suppressor";
 
 import { logger } from "matrix-js-sdk/lib/logger";
 
+import { createVoiceChain, type VoiceChain } from "./voiceChain";
+
 // The actual @sapphi-red/web-noise-suppressor module declares classes that extend
 // AudioWorkletNode at the top level, so importing it eagerly breaks anywhere that global
 // doesn't exist (eg. unit tests running outside a real browser). Load it lazily, only once
@@ -51,14 +53,16 @@ async function ensureWorkletRegistered(context: AudioContext): Promise<void> {
  * published, to suppress background/environmental noise beyond what the browser's own
  * WebRTC noise suppression does.
  */
-export class RnnoiseTrackProcessor
-  implements TrackProcessor<Track.Kind.Audio, AudioProcessorOptions>
-{
+export class RnnoiseTrackProcessor implements TrackProcessor<
+  Track.Kind.Audio,
+  AudioProcessorOptions
+> {
   public readonly name = "rnnoise-suppressor";
   public processedTrack?: MediaStreamTrack;
 
   private source?: MediaStreamAudioSourceNode;
   private node?: WebNoiseSuppressor.RnnoiseWorkletNode;
+  private chain?: VoiceChain;
   private destination?: MediaStreamAudioDestinationNode;
 
   public async init(opts: AudioProcessorOptions): Promise<void> {
@@ -75,22 +79,29 @@ export class RnnoiseTrackProcessor
     await Promise.resolve();
   }
 
-  private async setup({ audioContext, track }: AudioProcessorOptions): Promise<void> {
+  private async setup({
+    audioContext,
+    track,
+  }: AudioProcessorOptions): Promise<void> {
     const [{ RnnoiseWorkletNode }, wasmBinary] = await Promise.all([
       loadModule(),
       getWasmBinary(),
       ensureWorkletRegistered(audioContext),
     ]);
 
-    this.source = audioContext.createMediaStreamSource(new MediaStream([track]));
+    this.source = audioContext.createMediaStreamSource(
+      new MediaStream([track]),
+    );
     this.node = new RnnoiseWorkletNode(audioContext, {
       maxChannels: 1,
       wasmBinary,
     });
     this.destination = audioContext.createMediaStreamDestination();
 
+    this.chain = createVoiceChain(audioContext);
     this.source.connect(this.node);
-    this.node.connect(this.destination);
+    this.node.connect(this.chain.input);
+    this.chain.output.connect(this.destination);
 
     this.processedTrack = this.destination.stream.getAudioTracks()[0];
     logger.info("RNNoise processor initialised");
@@ -100,6 +111,8 @@ export class RnnoiseTrackProcessor
     this.source?.disconnect();
     this.node?.disconnect();
     this.node?.destroy();
+    this.chain?.dispose();
+    this.chain = undefined;
     this.destination?.disconnect();
     this.source = undefined;
     this.node = undefined;
