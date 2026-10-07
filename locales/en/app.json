@@ -171,6 +171,9 @@
   "mute_microphone_button_label": "Mute microphone",
   "participant_count_one": "{{count, number}}",
   "participant_count_other": "{{count, number}}",
+  "participants_modal": {
+    "title": "Participants"
+  },
   "qr_code": "QR Code",
   "rageshake_button_error_caption": "Retry sending logs",
   "rageshake_request_modal": {

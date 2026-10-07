@@ -300,6 +300,8 @@ export interface CallViewModel {
    *    multiple devices.
    */
   participantCount$: Behavior<number>;
+  /** Everyone currently in the call, local user included. */
+  userMedia$: Behavior<WrappedUserMediaViewModel[]>;
   allConnections$: Behavior<ConnectionManagerData>;
   /** Participants sorted by livekit room so they can be used in the audio rendering */
   livekitRoomItems$: Behavior<LivekitRoomItem[]>;
@@ -1758,6 +1760,7 @@ export function createCallViewModel$(
     ),
     allConnections$,
     participantCount$: participantCount$,
+    userMedia$,
     handsRaised$: handsRaised$,
     reactions$: reactions$,
     joinSoundEffect$: joinSoundEffect$,

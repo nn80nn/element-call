@@ -34,6 +34,8 @@ import { GridTile } from "../tile/GridTile";
 import { SettingsModal, defaultSettingsTab } from "../settings/SettingsModal";
 import { useRageshakeRequestModal } from "../settings/submit-rageshake";
 import { RageshakeRequestModal } from "./RageshakeRequestModal";
+import { ParticipantsModal } from "./ParticipantsModal";
+import { ParticipantsButton } from "../button/ParticipantsButton";
 import { useWakeLock } from "../useWakeLock";
 import { useMergedRefs } from "../useMergedRefs";
 import { type MuteStates } from "../state/MuteStates";
@@ -255,6 +257,8 @@ export const InCallView: FC<InCallViewProps> = ({
   const ringingVm = useBehavior(vm.ringingVm$);
   const audioParticipants = useBehavior(vm.livekitRoomItems$);
   const participantCount = useBehavior(vm.participantCount$);
+  const participants = useBehavior(vm.userMedia$);
+  const [participantsOpen, setParticipantsOpen] = useState(false);
   const reconnecting = useBehavior(vm.reconnecting$);
   const layout = useBehavior(vm.layout$);
   const edgeToEdge = useBehavior(vm.edgeToEdge$);
@@ -376,6 +380,7 @@ export const InCallView: FC<InCallViewProps> = ({
             />
           </LeftNav>
           <RightNav>
+            <ParticipantsButton onClick={() => setParticipantsOpen(true)} />
             {showControls && onShareClick !== null && (
               <InviteButton className={styles.invite} onClick={onShareClick} />
             )}
@@ -625,6 +630,11 @@ export const InCallView: FC<InCallViewProps> = ({
       {layout.type !== "pip" && (
         <>
           <RageshakeRequestModal {...rageshakeRequestModalProps} />
+          <ParticipantsModal
+            open={participantsOpen}
+            onDismiss={() => setParticipantsOpen(false)}
+            participants={participants}
+          />
           <SettingsModal
             client={client}
             roomId={matrixRoom.roomId}

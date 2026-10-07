@@ -161,9 +161,12 @@
   "microphone_off": "Микрофон выключен",
   "microphone_on": "Микрофон включен",
   "mute_microphone_button_label": "Отключить микрофон",
-  "participant_count_one": "{{count, number}}",
   "participant_count_few": "{{count, number}}",
   "participant_count_many": "{{count, number}}",
+  "participant_count_one": "{{count, number}}",
+  "participants_modal": {
+    "title": "Участники"
+  },
   "qr_code": "QR код",
   "rageshake_button_error_caption": "Повторить отправку журналов",
   "rageshake_request_modal": {
@@ -242,9 +245,9 @@
       "show_hand_raised_timer_label": "Показать продолжительность поднятия руки"
     }
   },
-  "star_rating_input_label_one": "{{count}} звезда",
   "star_rating_input_label_few": "{{count}} звезды",
   "star_rating_input_label_many": "{{count}} звезд",
+  "star_rating_input_label_one": "{{count}} звезда",
   "start_new_call": "Начать новый звонок",
   "start_video_button_label": "Начать видео",
   "stop_screenshare_button_label": "Демонстрация экрана",
