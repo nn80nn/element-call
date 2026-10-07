@@ -18,10 +18,14 @@ export function calculateInitialMuteState(
   skipLobby: boolean,
   callIntent: RTCCallIntent | undefined,
   isWidgetMode: boolean,
+  pushToTalk = false,
 ): { audioEnabled: boolean; videoEnabled: boolean } {
   logger.debug(
     `calculateInitialMuteState: skipLobby=${skipLobby}, callIntent=${callIntent} isWidgetMode=${isWidgetMode}`,
   );
+
+  // Push-to-talk means the microphone is closed until the key is held.
+  if (pushToTalk) return { audioEnabled: false, videoEnabled: false };
 
   if (skipLobby && !isWidgetMode) {
     // If not in widget mode and lobby is skipped, default to muted to protect user privacy.

@@ -1,0 +1,43 @@
+.indicator {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.indicator > span {
+  width: 3px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.indicator > span:nth-child(1) {
+  height: 4px;
+}
+
+.indicator > span:nth-child(2) {
+  height: 8px;
+}
+
+.indicator > span:nth-child(3) {
+  height: 12px;
+}
+
+.indicator > span[data-lit="true"] {
+  opacity: 1;
+}
+
+.indicator[data-quality="excellent"],
+.indicator[data-quality="good"] {
+  color: var(--cpd-color-icon-success-primary);
+}
+
+.indicator[data-quality="poor"] {
+  color: var(--cpd-color-icon-critical-primary);
+}
+
+.indicator[data-quality="lost"] {
+  color: var(--cpd-color-icon-critical-primary);
+}

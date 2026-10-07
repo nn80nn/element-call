@@ -1,0 +1,52 @@
+.root h4 {
+  margin: var(--cpd-space-4x) 0 var(--cpd-space-2x);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--cpd-space-3x);
+  margin: var(--cpd-space-2x) 0;
+}
+
+.slider {
+  margin: var(--cpd-space-2x) 0;
+}
+
+.slider > label {
+  display: block;
+  margin-bottom: var(--cpd-space-1x);
+}
+
+.meter {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--cpd-color-bg-subtle-secondary);
+  overflow: hidden;
+  margin: var(--cpd-space-2x) 0;
+}
+
+.meterFill {
+  height: 100%;
+  width: 0;
+  background: var(--cpd-color-icon-success-primary);
+  transition: width 60ms linear;
+}
+
+/* Voice activation is holding the microphone closed. */
+.meterFill[data-open="false"] {
+  background: var(--cpd-color-icon-tertiary);
+}
+
+.threshold {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--cpd-color-icon-primary);
+}
+
+.error {
+  color: var(--cpd-color-text-critical-primary) !important;
+}

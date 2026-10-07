@@ -5,12 +5,22 @@ SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
 Please see LICENSE in the repository root for full details.
 */
 
+import { inputMode, voiceThresholdDb } from "../settings/settings";
+
+/** How long the gate stays open after the level drops, so word endings aren't clipped. */
+const GATE_HOLD_MS = 350;
+const GATE_POLL_MS = 20;
+
 /**
  * The Web Audio nodes a processed microphone signal is routed through.
  */
 export interface VoiceChain {
   input: AudioNode;
   output: AudioNode;
+  /** Current level of the incoming signal in dBFS (-Infinity for silence). */
+  getLevelDb: () => number;
+  /** Whether voice activation currently lets the signal through. */
+  isOpen: () => boolean;
   /** Disconnects every node in the chain. */
   dispose: () => void;
 }
@@ -50,14 +60,53 @@ export function createVoiceChain(context: BaseAudioContext): VoiceChain {
   limiter.attack.value = 0.002;
   limiter.release.value = 0.1;
 
+  // Voice activation. The level is read from the signal entering the chain, i.e. after noise
+  // suppression, so room noise that was already removed doesn't hold the gate open.
+  const analyser = context.createAnalyser();
+  analyser.fftSize = 1024;
+  const samples = new Float32Array(analyser.fftSize);
+  const gate = context.createGain();
+
+  let levelDb = -Infinity;
+  let open = true;
+  let lastLoud = 0;
+  const poll = setInterval(() => {
+    analyser.getFloatTimeDomainData(samples);
+    let sum = 0;
+    for (const s of samples) sum += s * s;
+    levelDb = 20 * Math.log10(Math.sqrt(sum / samples.length) || 1e-10);
+
+    const now = performance.now();
+    if (levelDb > voiceThresholdDb.value$.value) lastLoud = now;
+    // A hidden page has its timers throttled to about one tick a second, far too slow to
+    // gate speech, so in that case fail open rather than chop words up.
+    open =
+      document.hidden ||
+      inputMode.value$.value !== "voice" ||
+      now - lastLoud < GATE_HOLD_MS;
+    // Open quickly so the first syllable gets through, close a bit more gently.
+    gate.gain.setTargetAtTime(
+      open ? 1 : 0,
+      context.currentTime,
+      open ? 0.005 : 0.04,
+    );
+  }, GATE_POLL_MS);
+
+  highPass.connect(analyser);
   highPass.connect(leveler);
   leveler.connect(makeup);
   makeup.connect(limiter);
+  limiter.connect(gate);
 
   return {
     input: highPass,
-    output: limiter,
+    output: gate,
+    getLevelDb: (): number => levelDb,
+    isOpen: (): boolean => open,
     dispose: (): void => {
+      clearInterval(poll);
+      analyser.disconnect();
+      gate.disconnect();
       highPass.disconnect();
       leveler.disconnect();
       makeup.disconnect();

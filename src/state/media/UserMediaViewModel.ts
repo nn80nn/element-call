@@ -19,7 +19,7 @@ import {
   observeParticipantEvents,
   observeParticipantMedia,
 } from "@livekit/components-core";
-import { ParticipantEvent, Track } from "livekit-client";
+import { ConnectionQuality, ParticipantEvent, Track } from "livekit-client";
 
 import { type ReactionOption } from "../../reactions";
 import { type Behavior } from "../Behavior";
@@ -56,6 +56,11 @@ export interface BaseUserMediaViewModel extends BaseMemberMediaViewModel {
   rtcBackendIdentity: string;
   handRaised$: Behavior<Date | null>;
   reaction$: Behavior<ReactionOption | null>;
+  /**
+   * How good LiveKit judges this participant's connection to be, which for a remote
+   * participant is the quality of what they are sending.
+   */
+  connectionQuality$: Behavior<ConnectionQuality>;
   audioStreamStats$: Observable<
     RTCInboundRtpStreamStats | RTCOutboundRtpStreamStats | undefined
   >;
@@ -143,6 +148,19 @@ export function createBaseUserMedia(
     rtcBackendIdentity,
     handRaised$,
     reaction$,
+    connectionQuality$: scope.behavior(
+      participant$.pipe(
+        switchMap((p) =>
+          p
+            ? observeParticipantEvents(
+                p,
+                ParticipantEvent.ConnectionQualityChanged,
+              ).pipe(map((p) => p.connectionQuality))
+            : of(ConnectionQuality.Unknown),
+        ),
+      ),
+      ConnectionQuality.Unknown,
+    ),
     audioStreamStats$: combineLatest([
       participant$,
       showConnectionStats.value$,

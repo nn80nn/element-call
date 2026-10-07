@@ -104,10 +104,7 @@ export const videoInput = new Setting<string | undefined>(
 
 export const backgroundBlur = new Setting<boolean>("background-blur", false);
 
-export const noiseSuppression = new Setting<boolean>(
-  "noise-suppression",
-  true,
-);
+export const noiseSuppression = new Setting<boolean>("noise-suppression", true);
 
 // Experimental alternative to RNNoise (see RnnoiseTrackProcessor): DTLN, which unlike
 // RNNoise was trained on a noise set that includes short transient noises (keyboard
@@ -118,6 +115,21 @@ export const noiseSuppressionDtln = new Setting<boolean>(
   "noise-suppression-dtln",
   false,
 );
+
+/**
+ * How the microphone decides when you are talking:
+ *  - "open": always transmitting while unmuted (the default);
+ *  - "voice": only while the level is above the sensitivity threshold;
+ *  - "ptt": only while the push-to-talk key is held, starting muted.
+ */
+export type InputMode = "open" | "voice" | "ptt";
+export const inputMode = new Setting<InputMode>("input-mode", "open");
+
+/** Level in dBFS above which voice activation opens the microphone. */
+export const voiceThresholdDb = new Setting<number>("voice-threshold-db", -45);
+
+/** `KeyboardEvent.code` of the push-to-talk key. */
+export const pushToTalkKey = new Setting<string>("push-to-talk-key", "KeyT");
 
 export const showHandRaisedTimer = new Setting<boolean>(
   "hand-raised-show-timer",

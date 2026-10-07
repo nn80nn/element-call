@@ -191,7 +191,20 @@
   "settings": {
     "audio_tab": {
       "effect_volume_description": "Отрегулируйте громкость воспроизведения реакций и эффектов поднятия руки.",
-      "effect_volume_label": "Громкость звукового эффекта"
+      "effect_volume_label": "Громкость звукового эффекта",
+      "input_mode_open": "Всегда передавать, пока микрофон включён",
+      "input_mode_ptt": "Нажми и говори",
+      "input_mode_title": "Режим ввода",
+      "input_mode_voice": "Голосовая активация",
+      "ptt_key_label": "Клавиша «Нажми и говори»",
+      "ptt_key_press": "Нажмите клавишу…",
+      "test_error": "Не удалось открыть микрофон.",
+      "test_listen": "Слышать себя",
+      "test_listen_description": "Воспроизводит ваш обработанный голос. Используйте наушники, чтобы не было эха.",
+      "test_start": "Проверить микрофон",
+      "test_stop": "Остановить проверку",
+      "test_title": "Проверка микрофона",
+      "voice_threshold_label": "Порог чувствительности: {{db}} дБ"
     },
     "background_blur_header": "Фон",
     "background_blur_label": "Размытие фона видео",
@@ -249,6 +262,12 @@
     "calling": "Вызов…",
     "camera_starting": "Загрузка видео...",
     "collapse": "Свернуть",
+    "connection_quality": {
+      "excellent": "Связь: отличная",
+      "good": "Связь: хорошая",
+      "lost": "Связь потеряна",
+      "poor": "Связь: плохая"
+    },
     "expand": "Развернуть",
     "mute_for_me": "Заглушить звук для меня",
     "muted_for_me": "Приглушить для меня",

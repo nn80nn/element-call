@@ -34,7 +34,7 @@ import { CallTerminatedMessage, useLoadGroupCall } from "./useLoadGroupCall";
 import { LobbyView } from "./LobbyView";
 import { E2eeType } from "../e2ee/e2eeType";
 import { useProfile } from "../profile/useProfile";
-import { useOptInAnalytics } from "../settings/settings";
+import { inputMode, useOptInAnalytics } from "../settings/settings";
 import { Link } from "../button/Link";
 import { ErrorView } from "../ErrorView";
 import { useMediaDevices } from "../MediaDevicesContext";
@@ -76,6 +76,7 @@ export const RoomPage: FC = (): ReactNode => {
           urlParams.skipLobby,
           urlParams.callIntent,
           widget !== null,
+          inputMode.value$.value === "ptt",
         ),
       ),
     );

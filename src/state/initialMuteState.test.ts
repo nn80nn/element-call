@@ -70,3 +70,17 @@ test.each<{
     expect(videoEnabled).toBe(false);
   },
 );
+
+test.each([false, true])(
+  "Starts with everything muted in push-to-talk mode (isWidgetMode: %s)",
+  (isWidgetMode) => {
+    const { audioEnabled, videoEnabled } = calculateInitialMuteState(
+      false,
+      "video",
+      isWidgetMode,
+      true,
+    );
+    expect(audioEnabled).toBe(false);
+    expect(videoEnabled).toBe(false);
+  },
+);

@@ -65,6 +65,11 @@ export class RnnoiseTrackProcessor implements TrackProcessor<
   private chain?: VoiceChain;
   private destination?: MediaStreamAudioDestinationNode;
 
+  /** The running voice chain, for level metering. */
+  public getVoiceChain(): VoiceChain | undefined {
+    return this.chain;
+  }
+
   public async init(opts: AudioProcessorOptions): Promise<void> {
     await this.setup(opts);
   }

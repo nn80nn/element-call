@@ -31,6 +31,7 @@ import { supportsRnnoise } from "../livekit/RnnoiseTrackProcessor";
 import { supportsDtln } from "../livekit/DtlnTrackProcessor";
 import { PreferencesSettingsTab } from "./PreferencesSettingsTab";
 import { Slider } from "../Slider";
+import { AudioInputSettings } from "./AudioInputSettings";
 import { DeviceSelection } from "./DeviceSelection";
 import { useTrackProcessor } from "../livekit/TrackProcessorContext";
 import { DeveloperSettingsTab } from "./DeveloperSettingsTab";
@@ -218,6 +219,8 @@ export const SettingsModal: FC<Props> = ({
         <Separator />
         <NoiseSuppressionCheckbox />
         <DtlnNoiseSuppressionCheckbox />
+        <Separator />
+        <AudioInputSettings />
       </>
     ),
   };

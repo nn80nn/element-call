@@ -6,6 +6,7 @@ Please see LICENSE in the repository root for full details.
 */
 
 import { type TrackReferenceOrPlaceholder } from "@livekit/components-core";
+import { type ConnectionQuality } from "livekit-client";
 import { animated } from "@react-spring/web";
 import { type FC, type ComponentProps, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +26,7 @@ import {
 import { type ReactionOption } from "../reactions";
 import { ReactionIndicator } from "../reactions/ReactionIndicator";
 import { RTCConnectionStats } from "../RTCConnectionStats";
+import { ConnectionQualityIndicator } from "./ConnectionQualityIndicator";
 import videoPlaceholder from "../graphics/video-placeholder.gif";
 
 interface Props extends ComponentProps<typeof animated.div> {
@@ -42,6 +44,7 @@ interface Props extends ComponentProps<typeof animated.div> {
   status?: ReactNode;
   showNameTags: boolean;
   nameTagLeadingIcon?: ReactNode;
+  connectionQuality?: ConnectionQuality;
   displayName: string;
   mxcAvatarUrl: string | undefined;
   avatarStyle?: "solid" | "translucent";
@@ -74,6 +77,7 @@ export const MediaView: FC<Props> = ({
   unencryptedWarning,
   showNameTags,
   nameTagLeadingIcon,
+  connectionQuality,
   displayName,
   mxcAvatarUrl,
   avatarStyle = "solid",
@@ -221,6 +225,9 @@ export const MediaView: FC<Props> = ({
             >
               {displayName}
             </Text>
+            {connectionQuality !== undefined && (
+              <ConnectionQualityIndicator quality={connectionQuality} />
+            )}
             {warnings}
           </div>
         ) : (

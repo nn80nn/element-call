@@ -9,6 +9,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { logger } from "matrix-js-sdk/lib/logger";
 
 import { useEventTarget } from "./useEvents";
+import { inputMode, pushToTalkKey, useSetting } from "./settings/settings";
 import {
   type ReactionOption,
   ReactionSet,
@@ -76,6 +77,10 @@ export function useCallViewKeyboardShortcuts(
   toggleHandRaised: (() => void) | null,
 ): void {
   const spacebarHeld = useRef(false);
+  const pttHeld = useRef(false);
+  const [mode] = useSetting(inputMode);
+  const [pttCode] = useSetting(pushToTalkKey);
+  const pushToTalk = mode === "ptt";
 
   // These event handlers are set on the window because we want users to be able
   // to trigger them without going to the trouble of focusing something
@@ -90,13 +95,24 @@ export function useCallViewKeyboardShortcuts(
         if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
           return;
 
-        if (event.key === "m") {
+        // In push-to-talk mode the configured key wins over every other shortcut.
+        if (pushToTalk && event.code === pttCode) {
+          event.preventDefault();
+          if (!pttHeld.current) {
+            pttHeld.current = true;
+            setAudioEnabled?.(true);
+          }
+        } else if (event.key === "m") {
           event.preventDefault();
           toggleAudio?.();
         } else if (event.key === "v") {
           event.preventDefault();
           toggleVideo?.();
-        } else if (event.key === " " && mayReceiveSpaceKeyEvents()) {
+        } else if (
+          event.key === " " &&
+          !pushToTalk &&
+          mayReceiveSpaceKeyEvents()
+        ) {
           event.preventDefault();
           if (!spacebarHeld.current) {
             spacebarHeld.current = true;
@@ -119,6 +135,8 @@ export function useCallViewKeyboardShortcuts(
         setAudioEnabled,
         sendReaction,
         toggleHandRaised,
+        pushToTalk,
+        pttCode,
       ],
     ),
     // Because this is set on the window, to prevent shortcuts from activating
@@ -132,13 +150,20 @@ export function useCallViewKeyboardShortcuts(
     "keyup",
     useCallback(
       (event: KeyboardEvent) => {
+        // Releasing the push-to-talk key must always close the microphone, wherever focus
+        // has wandered to in the meantime.
+        if (pttHeld.current && event.code === pttCode) {
+          pttHeld.current = false;
+          setAudioEnabled?.(false);
+          return;
+        }
         if (!mayReceiveKeyEvents() || !mayReceiveSpaceKeyEvents()) return;
-        if (event.key === " ") {
+        if (event.key === " " && !pushToTalk) {
           spacebarHeld.current = false;
           setAudioEnabled?.(false);
         }
       },
-      [setAudioEnabled],
+      [setAudioEnabled, pushToTalk, pttCode],
     ),
   );
 
@@ -146,9 +171,12 @@ export function useCallViewKeyboardShortcuts(
     window,
     "blur",
     useCallback(() => {
-      if (spacebarHeld.current) {
+      // The key-up never reaches us once the window has lost focus, so release here;
+      // leaving the microphone open would keep transmitting with nobody holding the key.
+      if (spacebarHeld.current || pttHeld.current) {
         spacebarHeld.current = false;
-        setAudioEnabled?.(true);
+        pttHeld.current = false;
+        setAudioEnabled?.(false);
       }
     }, [setAudioEnabled, spacebarHeld]),
   );

@@ -198,7 +198,20 @@
   "settings": {
     "audio_tab": {
       "effect_volume_description": "Adjust the volume at which reactions and hand raised effects play.",
-      "effect_volume_label": "Sound effect volume"
+      "effect_volume_label": "Sound effect volume",
+      "input_mode_open": "Always transmit while unmuted",
+      "input_mode_ptt": "Push to talk",
+      "input_mode_title": "Input mode",
+      "input_mode_voice": "Voice activation",
+      "ptt_key_label": "Push-to-talk key",
+      "ptt_key_press": "Press a key…",
+      "test_error": "Could not open the microphone.",
+      "test_listen": "Hear myself",
+      "test_listen_description": "Plays your processed voice back. Use headphones to avoid feedback.",
+      "test_start": "Test microphone",
+      "test_stop": "Stop test",
+      "test_title": "Microphone test",
+      "voice_threshold_label": "Sensitivity threshold: {{db}} dB"
     },
     "background_blur_header": "Background",
     "background_blur_label": "Blur the background of the video",
@@ -260,6 +273,12 @@
     "calling": "Calling…",
     "camera_starting": "Video loading...",
     "collapse": "Collapse",
+    "connection_quality": {
+      "excellent": "Connection: excellent",
+      "good": "Connection: good",
+      "lost": "Connection lost",
+      "poor": "Connection: poor"
+    },
     "expand": "Expand",
     "mute_for_me": "Mute for me",
     "muted_for_me": "Muted for me",

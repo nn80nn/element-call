@@ -142,6 +142,7 @@ const UserMediaTile: FC<UserMediaTileProps> = ({
   const audioEnabled = useBehavior(vm.audioEnabled$);
   const videoEnabled = useBehavior(vm.videoEnabled$);
   const speaking = useBehavior(vm.speaking$);
+  const connectionQuality = useBehavior(vm.connectionQuality$);
   const videoFit = useBehavior(vm.videoFit$);
 
   const rtcBackendIdentity = vm.rtcBackendIdentity;
@@ -196,6 +197,7 @@ const UserMediaTile: FC<UserMediaTileProps> = ({
         [styles.speaking]: showSpeaking,
         [styles.handRaised]: !showSpeaking && handRaised,
       })}
+      connectionQuality={connectionQuality}
       nameTagLeadingIcon={
         <AudioIcon
           width={20}

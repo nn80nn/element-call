@@ -35,6 +35,7 @@ import {
   RnnoiseTrackProcessor,
   supportsRnnoise,
 } from "../../../livekit/RnnoiseTrackProcessor.ts";
+import { VoiceChainTrackProcessor } from "../../../livekit/VoiceChainTrackProcessor.ts";
 import {
   DtlnTrackProcessor,
   supportsDtln,
@@ -42,6 +43,7 @@ import {
 import {
   noiseSuppression as noiseSuppressionSetting,
   noiseSuppressionDtln as noiseSuppressionDtlnSetting,
+  inputMode as inputModeSetting,
 } from "../../../settings/settings.ts";
 import { getUrlParams } from "../../../UrlParams.ts";
 import { observeTrackReference$ } from "../../observeTrackReference";
@@ -468,7 +470,12 @@ export class Publisher {
       ? new RnnoiseTrackProcessor()
       : undefined;
     const dtlnProcessor = supportsDtln() ? new DtlnTrackProcessor() : undefined;
-    if (!rnnoiseProcessor && !dtlnProcessor) return;
+    // Voice activation lives in the same chain as the noise suppressors but must also work
+    // without them, hence a processor of its own.
+    const voiceChainProcessor = supportsRnnoise()
+      ? new VoiceChainTrackProcessor()
+      : undefined;
+    if (!rnnoiseProcessor && !dtlnProcessor && !voiceChainProcessor) return;
 
     const audioTrack$ = scope.behavior(
       observeTrackReference$(
@@ -487,16 +494,19 @@ export class Publisher {
       audioTrack$,
       noiseSuppressionSetting.value$,
       noiseSuppressionDtlnSetting.value$,
+      inputModeSetting.value$,
     ])
       .pipe(scope.bind())
-      .subscribe(([audioTrack, rnnoiseEnabled, dtlnEnabled]) => {
+      .subscribe(([audioTrack, rnnoiseEnabled, dtlnEnabled, mode]) => {
         if (!audioTrack) return;
         const wanted =
           dtlnEnabled && dtlnProcessor
             ? dtlnProcessor
             : rnnoiseEnabled && rnnoiseProcessor
               ? rnnoiseProcessor
-              : undefined;
+              : mode === "voice"
+                ? voiceChainProcessor
+                : undefined;
         const current = audioTrack.getProcessor();
         if (current === wanted) return;
         (async (): Promise<void> => {
