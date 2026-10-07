@@ -12,9 +12,20 @@ import {
   type RoomOptions,
   ScreenSharePresets,
   type TrackPublishDefaults,
+  type TrackPublishOptions,
   type VideoPreset,
   VideoPresets,
 } from "livekit-client";
+
+/**
+ * Encoding for the audio that accompanies a screen share (a game, a video, music). The
+ * microphone preset caps at 48 kbit/s, which is plenty for a voice but audibly muddy for
+ * stereo programme material, which is the reason people share system audio in the first
+ * place. This only applies if the captured audio really is stereo; a mono source stays mono.
+ */
+export const screenShareAudioPublishOptions: TrackPublishOptions = {
+  audioPreset: AudioPresets.musicHighQualityStereo,
+};
 
 const defaultLiveKitPublishOptions: TrackPublishDefaults = {
   audioPreset: AudioPresets.music,

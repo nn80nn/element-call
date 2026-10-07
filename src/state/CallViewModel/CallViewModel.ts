@@ -142,6 +142,7 @@ import {
 import { Publisher } from "./localMember/Publisher.ts";
 import { type Connection } from "./remoteMembers/Connection.ts";
 import { createLayoutModeSwitch } from "./LayoutSwitch.ts";
+import { isStaleMedia$ } from "../staleMedia.ts";
 import {
   createWrappedUserMedia,
   type WrappedUserMediaViewModel,
@@ -723,9 +724,9 @@ export function createCallViewModel$(
   );
 
   /**
-   * List of user media (camera feeds) that we want tiles for.
+   * Every user media item we have a membership for, including ones that never got any media.
    */
-  const userMedia$ = scope.behavior<WrappedUserMediaViewModel[]>(
+  const allUserMedia$ = scope.behavior<WrappedUserMediaViewModel[]>(
     combineLatest([matrixLivekitMembers$, duplicateTiles.value$]).pipe(
       // Generate a collection of user media from the list of expected (whether
       // present or missing) LiveKit participants.
@@ -779,6 +780,30 @@ export function createCallViewModel$(
               reactions$.pipe(map((v) => v[mediaId] ?? undefined)),
             ),
           }),
+      ),
+    ),
+  );
+
+  /**
+   * List of user media (camera feeds) that we want tiles for: everything in `allUserMedia$`
+   * except remote members whose membership has had no media for long enough that it is
+   * evidently stale. See isStaleMedia$.
+   */
+  const userMedia$ = scope.behavior<WrappedUserMediaViewModel[]>(
+    allUserMedia$.pipe(
+      switchMap((items) =>
+        items.length === 0
+          ? of([])
+          : combineLatest(
+              items.map((m) =>
+                m.local
+                  ? of(false)
+                  : isStaleMedia$(
+                      m.waitingForMedia$,
+                      localMembership.reconnecting$,
+                    ),
+              ),
+            ).pipe(map((stale) => items.filter((_, i) => !stale[i]))),
       ),
     ),
   );

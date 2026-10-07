@@ -55,6 +55,7 @@ import { getUrlParams } from "../../../UrlParams.ts";
 import { PosthogAnalytics } from "../../../analytics/PosthogAnalytics.ts";
 import { MatrixRTCMode } from "../../../config/ConfigOptions.ts";
 import { Config } from "../../../config/Config.ts";
+import { screenShareAudioPublishOptions } from "../../../livekit/options.ts";
 import {
   ConnectionState,
   type Connection,
@@ -715,6 +716,9 @@ export const createLocalMembership$ = ({
           noiseSuppression: false,
           voiceIsolation: false,
         },
+        // Keep the call's own audio (everyone else's voices) out of what gets captured, rather
+        // than leaving it to echo cancellation to pick them back out of the programme audio.
+        suppressLocalAudioPlayback: true,
         selfBrowserSurface: "include",
         surfaceSwitching: "include",
         systemAudio: "include",
@@ -734,7 +738,11 @@ export const createLocalMembership$ = ({
       // is still initializing or publishing tracks, because there's no
       // technical reason to disallow this. LiveKit will publish if it can.
       participant$.value
-        ?.setScreenShareEnabled(targetScreenshareState, screenshareSettings)
+        ?.setScreenShareEnabled(
+          targetScreenshareState,
+          screenshareSettings,
+          screenShareAudioPublishOptions,
+        )
         .catch(logger.error);
     };
   }
